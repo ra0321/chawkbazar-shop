@@ -1,0 +1,49 @@
+extend type Query {
+    tags(
+        orderBy: _ @orderBy(columns: ["created_at", "name", "updated_at"])
+        name: String @where(operator: "LIKE")
+        text: String @where(operator: "like", key: "name")
+        hasType: _ @whereHasConditions(columns: ["slug"])
+    ): [Tag!]! @paginate(defaultCount: 15)
+    tag(id: ID @eq, slug: String @eq): Tag @find
+}
+
+type Tag {
+    id: ID!
+    name: String!
+    slug: String!
+    details: String
+    image: Attachment
+    icon: String
+    type: Type! @belongsTo
+    products: [Product] @belongsToMany
+    created_at: DateTime
+    updated_at: DateTime
+}
+
+input CreateTagInput {
+    name: String! @rules(apply: ["required", "max:255"])
+    type: ConnectTypeBelongsTo!
+    details: String
+    image: AttachmentInput
+    icon: String
+}
+
+input UpdateTagInput {
+    id: ID! @rules(apply: ["required"])
+    name: String! @rules(apply: ["max:255"])
+    type: ConnectTypeBelongsTo!
+    details: String
+    image: AttachmentInput
+    icon: String
+}
+
+extend type Mutation {
+    deleteTag(id: ID!): Tag @delete @can(ability: "super_admin")
+    createTag(input: CreateTagInput! @spread): Tag
+        @create
+        @can(ability: "super_admin")
+    updateTag(input: UpdateTagInput! @spread): Tag
+        @update
+        @can(ability: "super_admin")
+}

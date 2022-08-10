@@ -1,0 +1,65 @@
+type Tax {
+    id: ID!
+    name: String!
+    rate: Float!
+    is_global: Boolean
+    country: String
+    state: String
+    zip: String
+    city: String
+    priority: Int
+    on_shipping: Boolean
+}
+
+extend type Query {
+    taxClasses(
+        text: String @where(operator: "like", key: "name")
+        orderBy: _
+            @orderBy(
+                columns: [
+                    "updated_at"
+                    "created_at"
+                    "name"
+                    "rate"
+                    "country"
+                    "state"
+                ]
+            )
+    ): [Tax!]! @all
+    taxClass(id: ID! @eq): Tax @find
+}
+
+input CreateTaxInput {
+    name: String!
+    rate: Float!
+    is_global: Boolean
+    country: String
+    state: String
+    zip: String
+    city: String
+    priority: Int
+    on_shipping: Boolean
+}
+
+input UpdateTaxInput {
+    id: ID!
+    name: String!
+    rate: Float!
+    is_global: Boolean
+    country: String
+    state: String
+    zip: String
+    city: String
+    priority: Int
+    on_shipping: Boolean
+}
+
+extend type Mutation {
+    createTax(input: CreateTaxInput! @spread): Tax
+        @create
+        @can(ability: "super_admin")
+    updateTax(input: UpdateTaxInput! @spread): Tax
+        @update
+        @can(ability: "super_admin")
+    deleteTax(id: ID!): Tax @delete @can(ability: "super_admin")
+}

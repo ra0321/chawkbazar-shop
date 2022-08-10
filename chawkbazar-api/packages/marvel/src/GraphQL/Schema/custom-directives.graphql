@@ -1,0 +1,8 @@
+# Directive class: App\GraphQL\Directives\ContainDirective
+directive @contain(
+    """
+    Specify the database column to compare.
+    Only required if database column has a different name than the attribute in your schema.
+    """
+    key: String
+) on ARGUMENT_DEFINITION

@@ -1,0 +1,47 @@
+extend type Query {
+    attributes(
+        shop_id: ID @eq
+        orderBy: _ @orderBy(columns: ["created_at", "name", "updated_at"])
+    ): [Attribute] @all
+    attribute(id: ID @eq, slug: String @eq): Attribute @find
+}
+
+type Attribute {
+    id: ID!
+    name: String!
+    shop_id: ID!
+    shop: Shop @belongsTo
+    slug: String!
+    values: [AttributeValue]
+    created_at: DateTime
+    updated_at: DateTime
+}
+
+input AttributeValueInput {
+    id: ID
+    value: String!
+    meta: String
+}
+
+input CreateAttributeInput {
+    name: String! @rules(apply: ["min:2"])
+    shop_id: ID! @rules(apply: ["exists:shops,id"])
+    values: [AttributeValueInput]
+}
+input UpdateAttributeInput {
+    id: ID!
+    name: String! @rules(apply: ["min:2"])
+    shop_id: ID! @rules(apply: ["exists:shops,id"])
+    values: [AttributeValueInput]
+}
+
+extend type Mutation {
+    createAttribute(input: CreateAttributeInput! @spread): Attribute
+        @field(resolver: "AttributeMutator@storeAttribute")
+    updateAttribute(input: UpdateAttributeInput! @spread): Attribute
+        @field(resolver: "AttributeMutator@updateAttribute")
+    deleteAttribute(id: ID!): Attribute
+        @field(resolver: "AttributeMutator@deleteAttribute")
+    importAttributes(shop_id: ID! @spread, csv: Upload!): Boolean
+        @field(resolver: "AttributeMutator@importAttributes")
+}

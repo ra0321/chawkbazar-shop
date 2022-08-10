@@ -1,0 +1,190 @@
+extend type Query {
+    products(
+        orderBy: _
+            @orderBy(
+                columns: [
+                    "created_at"
+                    "name"
+                    "status"
+                    "updated_at"
+                    "price"
+                    "sale_price"
+                    "max_price"
+                    "min_price"
+                    "quantity"
+                ]
+            )
+        text: String @where(operator: "like", key: "name")
+        status: String @eq
+        shop_id: ID @eq
+        hasType: _ @whereHasConditions(columns: ["slug"])
+        hasCategories: _ @whereHasConditions(columns: ["slug"])
+    ): [Product!]!
+        @paginate(defaultCount: 15)
+        @orderBy(column: "created_at", direction: "DESC")
+    product(id: ID @eq, slug: String @eq): Product @find
+    # search(text: String! @search): [Product!]! @paginate(defaultCount: 15)
+}
+
+enum ProductStatus {
+    PUBLISH @enum(value: "publish")
+    DRAFT @enum(value: "draft")
+}
+
+type OrderProductPivot {
+    variation_option_id: ID
+    order_quantity: Int
+    unit_price: Float
+    subtotal: Float
+}
+
+type Variation {
+    id: ID
+    title: String
+    price: Float
+    sku: String
+    is_disable: Boolean
+    sale_price: Float
+    quantity: Int
+    options: [VariationOption]
+}
+
+type VariationOption {
+    name: String
+    value: String
+}
+
+type Product {
+    id: ID!
+    name: String!
+    slug: String!
+    type: Type! @belongsTo
+    product_type: ProductType!
+    categories: [Category] @belongsToMany
+    tags: [Tag] @belongsToMany
+    variations: [AttributeValue] @belongsToMany
+    variation_options: [Variation] @hasMany
+    pivot: OrderProductPivot
+    orders: [Order] @belongsToMany
+    shop: Shop @belongsTo
+    shop_id: ID
+    related_products(limit: Int): [Product]
+        @field(
+            resolver: "Marvel\\GraphQL\\Queries\\ProductQuery@relatedProducts"
+        )
+    description: String
+    in_stock: Boolean
+    is_taxable: Boolean
+    sale_price: Float
+    max_price: Float
+    min_price: Float
+    sku: String
+    gallery: [Attachment]
+    image: Attachment
+    status: ProductStatus!
+    height: String
+    length: String
+    width: String
+    price: Float
+    quantity: Int
+    unit: String!
+    created_at: DateTime
+    updated_at: DateTime
+}
+
+input UpsertVariationsHasMany {
+    upsert: [VariationInput]
+    delete: [ID!]
+}
+
+input VariationInput {
+    id: ID
+    title: String
+    sku: String
+    is_disable: Boolean
+    sale_price: Float
+    price: Float
+    quantity: Int
+    options: [VariationOptionInput]
+}
+
+input VariationOptionInput {
+    name: String
+    value: String
+}
+
+input SyncAttributeBelongsToMany {
+    sync: [AttributeProductPivot]
+}
+
+input AttributeProductPivot {
+    attribute_value_id: ID! @rules(apply: ["exists:attribute_values,id"])
+}
+
+input CreateProductInput {
+    name: String! @rules(apply: ["required", "max:255"])
+    type_id: ID! @rules(apply: ["required", "exists:types,id"])
+    shop_id: ID! @rules(apply: ["exists:shops,id"])
+    price: Float
+    max_price: Float
+    min_price: Float
+    sale_price: Float
+    quantity: Int
+    product_type: ProductType!
+    unit: String! @rules(apply: ["required"])
+    description: String @rules(apply: ["max:1000"])
+    categories: [ID!]
+    tags: [ID!]
+    variations: [AttributeProductPivot]
+    variation_options: UpsertVariationsHasMany
+    in_stock: Boolean
+    is_taxable: Boolean
+    sale_price: Float
+    sku: String
+    gallery: [AttachmentInput]
+    image: AttachmentInput
+    status: ProductStatus
+    height: String
+    length: String
+    width: String
+}
+
+input UpdateProductInput {
+    id: ID! @rules(apply: ["required"])
+    name: String!
+    type_id: ID! @rules(apply: ["required", "exists:types,id"])
+    shop_id: ID! @rules(apply: ["exists:shops,id"])
+    price: Float
+    max_price: Float
+    min_price: Float
+    quantity: Int
+    product_type: ProductType!
+    unit: String! @rules(apply: ["required"])
+    description: String @rules(apply: ["max:1000"])
+    categories: [ID!]
+    tags: [ID!]
+    variations: [AttributeProductPivot]
+    variation_options: UpsertVariationsHasMany
+    in_stock: Boolean
+    is_taxable: Boolean
+    sale_price: Float
+    sku: String!
+    gallery: [AttachmentInput]
+    image: AttachmentInput
+    status: ProductStatus!
+    height: String
+    length: String
+    width: String
+}
+
+extend type Mutation {
+    deleteProduct(id: ID!): Product @delete @can(ability: "staff")
+    createProduct(input: CreateProductInput! @spread): Product
+        @field(resolver: "ProductMutator@store")
+    updateProduct(input: UpdateProductInput! @spread): Product
+        @field(resolver: "ProductMutator@updateProduct")
+    importProducts(shop_id: ID! @spread, csv: Upload!): Boolean
+        @field(resolver: "ProductMutator@importProducts")
+    importVariationOptions(shop_id: ID! @spread, csv: Upload!): Boolean
+        @field(resolver: "ProductMutator@importVariationOptions")
+}

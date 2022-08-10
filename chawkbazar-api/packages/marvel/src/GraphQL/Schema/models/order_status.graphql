@@ -1,0 +1,50 @@
+extend type Query {
+    orderStatuses(
+        text: String @where(operator: "like", key: "name")
+        orderBy: _
+            @orderBy(columns: ["updated_at", "created_at", "serial", "name"])
+    ): [OrderStatus!]! @paginate(defaultCount: 15)
+    orderStatus(id: ID @eq): OrderStatus @find
+}
+
+type OrderStatus {
+    id: ID!
+    name: String!
+    color: String
+    serial: Int!
+    created_at: DateTime
+    updated_at: DateTime
+}
+
+input CreateOrderStatusInput {
+    name: String!
+        @rules(
+            apply: ["unique:order_status,name"]
+            messages: {
+                unique: "Sorry! this name has been already taken. It should be unique"
+            }
+        )
+    color: String!
+    serial: Int!
+        @rules(
+            apply: ["unique:order_status,serial"]
+            messages: { unique: "Sorry! this serial has been already taken." }
+        )
+}
+
+input UpdateOrderStatusInput {
+    id: ID! @rules(apply: ["required"])
+    name: String!
+    color: String!
+    serial: Int!
+}
+
+extend type Mutation {
+    createOrderStatus(input: CreateOrderStatusInput! @spread): OrderStatus
+        @create
+        @can(ability: "super_admin")
+    updateOrderStatus(input: UpdateOrderStatusInput! @spread): OrderStatus
+        @update
+        @can(ability: "super_admin")
+    deleteOrderStatus(id: ID!): OrderStatus @delete @can(ability: "super_admin")
+}

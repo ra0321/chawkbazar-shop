@@ -1,0 +1,16 @@
+type ContactResponse {
+    message: String
+    success: Boolean
+}
+
+input ContactInput {
+    subject: String!
+    email: String!
+    name: String!
+    description: String!
+}
+
+extend type Mutation {
+    contactUs(input: ContactInput! @spread): ContactResponse
+        @field(resolver: "AuthMutator@contactAdmin")
+}

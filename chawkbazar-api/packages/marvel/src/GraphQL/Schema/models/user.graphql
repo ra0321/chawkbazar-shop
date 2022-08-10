@@ -1,0 +1,179 @@
+extend type Query {
+    users(
+        text: String @where(operator: "like", key: "name")
+        orderBy: _ @orderBy(columns: ["updated_at", "created_at", "name"])
+    ): [User!]! @paginate(defaultCount: 10) @can(ability: "super_admin")
+    user(id: ID @eq): User @find @can(ability: "super_admin")
+    me: User @field(resolver: "UserQuery@me")
+}
+
+type User {
+    id: ID
+    name: String
+    email: String
+    shop_id: ID
+    created_at: DateTime
+    updated_at: DateTime
+    profile: Profile @hasOne
+    shops: [Shop] @hasMany
+    managed_shop: Shop @belongsTo
+    is_active: Boolean
+    is_active: Boolean
+    address: [Address] @hasMany
+    orders: [Order] @hasMany @lazyLoad(relations: ["products", "status"])
+}
+
+input LoginInput {
+    email: String!
+    password: String!
+}
+
+input SocialLoginInput {
+    provider: String
+    access_token: String
+}
+
+input OtpInput {
+    phone_number: String!
+}
+
+input VerifyOtpInput {
+    otp_id: String!
+    code: String!
+    phone_number: String!
+}
+
+input OtpLoginInput {
+    otp_id: String!
+    code: String!
+    phone_number: String!
+    name: String
+    email: String
+}
+
+input UpdateContactInput {
+    otp_id: String!
+    code: String!
+    phone_number: String!
+    user_id: String!
+}
+
+input RegisterInput {
+    email: String!
+        @rules(
+            apply: ["unique:users,email"]
+            messages: { unique: "Sorry! this email has been already taken." }
+        )
+    password: String!
+    name: String!
+    permission: Permission
+}
+
+type AuthResponse {
+    token: String
+    permissions: [String]
+}
+
+type OtpResponse {
+    message: String
+    success: Boolean
+    provider: String
+    id: String
+    phone_number: String
+    is_contact_exist: Boolean
+}
+
+input UserProfileInput {
+    avatar: AttachmentInput
+    bio: String
+    socials: [SocialInput]
+    contact: String
+    id: ID
+}
+
+input ProfileHasOne {
+    upsert: UserProfileInput
+}
+
+input UserAddressUpsertInput {
+    title: String!
+    default: Boolean
+    address: UserAddressInput!
+    type: AddressType!
+    id: ID
+}
+
+input AddressHasMany {
+    upsert: [UserAddressUpsertInput]
+}
+
+input UpdateUserInput {
+    id: ID!
+    name: String
+    profile: ProfileHasOne
+    address: AddressHasMany
+}
+
+input ChangePasswordInput {
+    oldPassword: String!
+    newPassword: String!
+}
+
+input ForgetPasswordInput {
+    email: String!
+}
+input VerifyForgetPasswordTokenInput {
+    token: String!
+    email: String!
+}
+
+input ResetPasswordInput {
+    token: String!
+    email: String!
+    password: String!
+}
+
+type PasswordChangeResponse {
+    message: String
+    success: Boolean
+}
+
+type SuccessResponse {
+    message: String
+    success: Boolean
+}
+
+extend type Mutation {
+    login(input: LoginInput! @spread): AuthResponse
+        @field(resolver: "AuthMutator@token")
+    socialLogin(input: SocialLoginInput! @spread): AuthResponse
+        @field(resolver: "AuthMutator@socialLogin")
+    sendOtpCode(input: OtpInput! @spread): OtpResponse
+        @field(resolver: "AuthMutator@sendOtpCode")
+    verifyOtpCode(input: VerifyOtpInput! @spread): SuccessResponse
+        @field(resolver: "AuthMutator@verifyOtpCode")
+    otpLogin(input: OtpLoginInput! @spread): AuthResponse
+        @field(resolver: "AuthMutator@otpLogin")
+    updateContact(input: UpdateContactInput! @spread): SuccessResponse
+        @field(resolver: "AuthMutator@updateContact")
+    logout: Boolean @field(resolver: "AuthMutator@logout")
+    register(input: RegisterInput! @spread): AuthResponse
+        @field(resolver: "AuthMutator@register")
+    banUser(id: ID!): User @field(resolver: "AuthMutator@banUser")
+    activeUser(id: ID!): User @field(resolver: "AuthMutator@activeUser")
+    changePassword(input: ChangePasswordInput! @spread): PasswordChangeResponse
+        @field(resolver: "AuthMutator@changePassword")
+    forgetPassword(input: ForgetPasswordInput! @spread): PasswordChangeResponse
+        @field(resolver: "AuthMutator@forgetPassword")
+    verifyForgetPasswordToken(
+        input: VerifyForgetPasswordTokenInput! @spread
+    ): PasswordChangeResponse
+        @field(resolver: "AuthMutator@verifyForgetPasswordToken")
+    resetPassword(input: ResetPasswordInput! @spread): PasswordChangeResponse
+        @field(resolver: "AuthMutator@resetPassword")
+    register(input: RegisterInput! @spread): AuthResponse
+        @field(resolver: "AuthMutator@register")
+    updateUser(input: UpdateUserInput! @spread): User
+        @update
+        @can(ability: "customer")
+}

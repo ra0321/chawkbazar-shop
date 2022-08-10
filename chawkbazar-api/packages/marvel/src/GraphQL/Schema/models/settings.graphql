@@ -1,0 +1,115 @@
+extend type Query {
+    settings: Settings @first
+}
+
+type SeoSettings {
+    metaTitle: String
+    metaDescription: String
+    metaTags: String
+    canonicalUrl: String
+    ogTitle: String
+    ogDescription: String
+    ogImage: Attachment
+    twitterHandle: String
+    twitterCardType: String
+}
+
+type ContactDetails {
+    socials: [ShopSocials]
+    contact: String
+    location: Location
+    website: String
+}
+input ContactDetailsInput {
+    socials: [ShopSocialInput]
+    contact: String
+    location: LocationInput
+    website: String
+}
+
+type GoogleSettings {
+    isEnable: Boolean
+    tagManagerId: String
+}
+type FacebookSettings {
+    isEnable: Boolean
+    appId: String
+    pageId: String
+}
+
+type DeliveryTime {
+    title: String
+    description: String
+}
+
+input DeliveryTimeInput {
+    title: String
+    description: String
+}
+
+type SettingsOptions {
+    siteTitle: String
+    siteSubtitle: String
+    currency: String
+    contactDetails: ContactDetails
+    minimumOrderAmount: Float
+    deliveryTime: [DeliveryTime]
+    logo: Attachment
+    taxClass: String
+    shippingClass: String
+    seo: SeoSettings
+    google: GoogleSettings
+    facebook: FacebookSettings
+}
+
+type Settings {
+    id: ID
+    options: SettingsOptions
+}
+
+input GoogleSettingsInput {
+    isEnable: Boolean
+    tagManagerId: String
+}
+input FacebookSettingsInput {
+    isEnable: Boolean
+    appId: String
+    pageId: String
+}
+
+input SeoSettingsInput {
+    metaTitle: String
+    metaDescription: String
+    metaTags: String
+    canonicalUrl: String
+    ogTitle: String
+    ogDescription: String
+    ogImage: AttachmentInput
+    twitterHandle: String
+    twitterCardType: String
+}
+
+input SettingsOptionsInput {
+    siteTitle: String
+    siteSubtitle: String
+    currency: String
+    contactDetails: ContactDetailsInput
+    minimumOrderAmount: Float
+    deliveryTime: [DeliveryTimeInput]
+    logo: AttachmentInput
+    taxClass: String
+    shippingClass: String
+    seo: SeoSettingsInput
+    google: GoogleSettingsInput
+    facebook: FacebookSettingsInput
+}
+
+input SettingsInput {
+    options: SettingsOptionsInput
+}
+
+extend type Mutation {
+    updateSettings(input: SettingsInput! @spread): Settings
+        @field(resolver: "SettingsMutator@update")
+        @can(ability: "super_admin")
+}

@@ -1,0 +1,5 @@
+type Mutation {
+    upload(attachment: [Upload]): [Attachment]
+        @field(resolver: "UploadMutator@store")
+        @can(ability: "customer")
+}

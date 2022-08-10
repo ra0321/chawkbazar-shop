@@ -1,0 +1,18 @@
+type VerifiedCheckoutData {
+    total_tax: Float!
+    shipping_charge: Float!
+    unavailable_products: [ID]
+}
+
+input CheckoutVerificationInput {
+    amount: Float!
+    products: [ConnectProductOrderPivot!]!
+    billing_address: UserAddressInput
+    shipping_address: UserAddressInput
+}
+
+extend type Mutation {
+    verifyCheckout(
+        input: CheckoutVerificationInput! @spread
+    ): VerifiedCheckoutData @field(resolver: "CheckoutMutator@verify")
+}

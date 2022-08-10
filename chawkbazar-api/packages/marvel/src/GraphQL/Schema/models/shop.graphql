@@ -1,0 +1,171 @@
+extend type Query {
+    shops(
+        text: String @where(operator: "like", key: "name")
+        is_active: Boolean @eq
+        orderBy: String
+        sortedBy: String
+    ): [Shop]
+        @paginate(
+            builder: "Marvel\\GraphQL\\Queries\\ShopQuery@fetchShops"
+            defaultCount: 15
+        )
+    staffs(shop_id: ID!, orderBy: String, sortedBy: String): [User]
+        @paginate(
+            builder: "Marvel\\GraphQL\\Queries\\UserQuery@fetchStaff"
+            defaultCount: 15
+        )
+    shop(id: ID @eq, slug: String @eq): Shop @find
+}
+
+type Shop {
+    id: ID!
+    owner_id: ID!
+    owner: User @belongsTo
+    staffs: [User] @hasMany
+    is_active: Boolean!
+    orders_count: Int @count(relation: "orders")
+    products_count: Int @count(relation: "products")
+    balance: Balance @hasOne
+    name: String!
+    slug: String!
+    description: String
+    cover_image: Attachment
+    logo: Attachment
+    address: UserAddress
+    settings: ShopSettings
+    created_at: DateTime
+    updated_at: DateTime
+}
+
+type ShopSettings {
+    socials: [ShopSocials]
+    contact: String
+    location: Location
+    website: String
+}
+
+type Location {
+    lat: Float
+    lng: Float
+    city: String
+    state: String
+    country: String
+    zip: String
+    formattedAddress: String
+}
+
+type ShopSocials {
+    icon: String
+    url: String
+}
+
+type Balance {
+    id: ID!
+    admin_commission_rate: Float
+    shop: Shop @belongsTo
+    total_earnings: Float
+    withdrawn_amount: Float
+    current_balance: Float
+    payment_info: PaymentInfo
+}
+input BalanceInput {
+    id: ID
+    payment_info: PaymentInfoInput
+}
+
+input PaymentInfoInput {
+    account: Float
+    name: String
+    email: String
+    bank: String
+}
+
+type PaymentInfo {
+    account: String
+    name: String
+    email: String
+    bank: String
+}
+
+input CreateShopInput {
+    name: String!
+    description: String
+    cover_image: AttachmentInput
+    logo: AttachmentInput
+    address: UserAddressInput
+    settings: String
+    categories: [ID]
+    balance: BalanceInput
+    settings: ShopSettingsInput
+}
+input UpdateShopInput {
+    id: ID!
+    name: String!
+    description: String
+    cover_image: AttachmentInput
+    logo: AttachmentInput
+    address: UserAddressInput
+    settings: String
+    categories: [ID]
+    balance: BalanceInput
+    settings: ShopSettingsInput
+}
+
+input ShopSettingsInput {
+    socials: [ShopSocialInput]
+    contact: String
+    location: LocationInput
+    website: String
+}
+
+input LocationInput {
+    lat: Float
+    lng: Float
+    city: String
+    state: String
+    country: String
+    zip: String
+    formattedAddress: String
+}
+
+input ShopSocialInput {
+    icon: String
+    url: String
+}
+
+input ApproveShopInput {
+    id: ID!
+    admin_commission_rate: Float!
+}
+
+input AddStaffInput {
+    email: String!
+        @rules(
+            apply: ["unique:users,email"]
+            messages: { unique: "Sorry! this email has been already taken." }
+        )
+    password: String!
+    name: String!
+    shop_id: ID! @rules(apply: ["exists:shops,id"])
+}
+
+extend type Mutation {
+    approveShop(input: ApproveShopInput! @spread): Shop
+        @field(resolver: "ShopMutator@approveShop")
+        @can(ability: "super_admin")
+    disapproveShop(id: ID!): Shop
+        @field(resolver: "ShopMutator@disApproveShop")
+        @can(ability: "super_admin")
+    addStaff(input: AddStaffInput! @spread): Boolean
+        @field(resolver: "ShopMutator@addStaff")
+    removeStaff(id: ID!): User @field(resolver: "ShopMutator@removeStaff")
+    deleteShop(id: ID!): Shop
+        @field(resolver: "ShopMutator@deleteShop")
+        @can(ability: "store_owner")
+    createShop(input: CreateShopInput! @spread): Shop
+        @field(resolver: "ShopMutator@createShop")
+        @can(ability: "store_owner")
+    updateShop(input: UpdateShopInput! @spread): Shop
+        @field(resolver: "ShopMutator@updateShop")
+        @can(ability: "store_owner")
+}

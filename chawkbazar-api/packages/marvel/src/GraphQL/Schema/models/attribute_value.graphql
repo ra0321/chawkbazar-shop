@@ -1,0 +1,40 @@
+extend type Query {
+    attributeValues(shop_id: ID @eq): [AttributeValue!]! @all
+    attributeValue(id: ID! @eq): AttributeValue @find
+}
+
+type AttributeValue {
+    id: ID!
+    value: String!
+    meta: String
+    attribute_id: ID!
+    attribute: Attribute @belongsTo
+}
+
+input AttributeBelongTo {
+    connect: ID! @rules(apply: ["exists:attributes,id"])
+}
+
+input CreateAttributeValueInput {
+    value: String!
+    meta: String
+    attribute_id: ID! @rules(apply: ["exists:attributes,id"])
+}
+input UpdateAttributeValueInput {
+    id: ID!
+    value: String!
+    meta: String
+    attribute_id: ID! @rules(apply: ["exists:attributes,id"])
+}
+
+extend type Mutation {
+    createAttributeValue(
+        input: CreateAttributeValueInput! @spread
+    ): AttributeValue @field(resolver: "AttributeValueMutator@store")
+    updateAttributeValue(
+        input: UpdateAttributeValueInput! @spread
+    ): AttributeValue @update @can(ability: "store_owner")
+    deleteAttributeValue(id: ID!): AttributeValue
+        @delete
+        @can(ability: "store_owner")
+}

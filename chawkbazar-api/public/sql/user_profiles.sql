@@ -1,0 +1,3 @@
+INSERT INTO `user_profiles` (`id`, `avatar`, `bio`, `socials`, `contact`, `customer_id`, `created_at`, `updated_at`) VALUES
+(2, '{\"id\": 297, \"original\": \"https://chawkbazarlaravel.s3.ap-southeast-1.amazonaws.com/297/store_owner.png\", \"thumbnail\": \"https://chawkbazarlaravel.s3.ap-southeast-1.amazonaws.com/297/conversions/store_owner-thumbnail.jpg\"}', 'This is the store owner and we have 6 shops under our banner. We are running all the shops to give our customers hassle-free service and quality products. Our goal is to provide best possible customer service and products for our clients', NULL, '12365141641631', 2, '2021-08-18 13:17:53', '2021-11-25 06:21:29'),
+(3, NULL, '', NULL, '19365141641631', 3, '2021-08-18 13:17:53', '2021-08-18 13:17:53');

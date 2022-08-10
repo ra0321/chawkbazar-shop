@@ -1,0 +1,94 @@
+extend type Query {
+    coupons(
+        text: String @where(operator: "like", key: "code")
+        orderBy: _
+            @orderBy(
+                columns: [
+                    "created_at"
+                    "updated_at"
+                    "code"
+                    "amount"
+                    "expire_at"
+                    "active_from"
+                ]
+            )
+    ): [Coupon!]! @paginate(defaultCount: 15)
+    coupon(id: ID @eq, code: String @eq): Coupon @find
+}
+
+type Coupon {
+    id: ID!
+    code: String!
+    description: String
+    orders: [Order] @hasMany
+    type: CouponType!
+    image: Attachment
+    is_valid: Boolean
+    amount: Float!
+    active_from: String!
+    expire_at: String!
+    created_at: DateTime
+    updated_at: DateTime
+}
+
+input CreateCouponInput {
+    code: String!
+        @rules(
+            apply: ["min:2", "max:20", "unique:coupons,code"]
+            messages: {
+                min: "Code should be min 2 character"
+                max: "Code should be min 20 character"
+                unique: "Sorry! this code has been already taken. It should be unique"
+            }
+        )
+    type: CouponType!
+    amount: Float!
+    description: String
+        @rules(
+            apply: ["max:1000"]
+            messages: { max: "Description should be max 1000 character" }
+        )
+    image: AttachmentInput
+    active_from: String!
+    expire_at: String!
+}
+
+input UpdateCouponInput {
+    id: ID!
+    code: String!
+        @rules(
+            apply: ["min:2", "max:20"]
+            messages: {
+                min: "Code should be min 2 character"
+                max: "Code should be min 20 character"
+            }
+        )
+    type: CouponType!
+    amount: Float!
+    description: String
+        @rules(
+            apply: ["max:1000"]
+            messages: { max: "Description should be max 1000 character" }
+        )
+    image: AttachmentInput
+    active_from: String!
+    expire_at: String!
+}
+
+type VerifyCouponResponse {
+    is_valid: Boolean!
+    coupon: Coupon
+}
+
+extend type Mutation {
+    createCoupon(input: CreateCouponInput! @spread): Coupon
+        @create
+        @can(ability: "super_admin")
+    updateCoupon(input: UpdateCouponInput! @spread): Coupon
+        @update
+        @can(ability: "super_admin")
+    deleteCoupon(id: ID!): Coupon @delete @can(ability: "super_admin")
+    verifyCoupon(code: String!): VerifyCouponResponse
+        @field(resolver: "CouponMutator@verify")
+    restoreCoupon(id: ID!): Coupon @restore @can(ability: "super_admin")
+}

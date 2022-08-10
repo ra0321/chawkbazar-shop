@@ -1,0 +1,36 @@
+extend type Query {
+    address: [Address!]! @all @can(ability: "super_admin")
+    singleAddress(id: ID @eq): Address @find @can(ability: "super_admin")
+}
+
+enum AddressType {
+    BILLING @enum(value: "billing")
+    SHIPPING @enum(value: "shipping")
+}
+
+type Address {
+    id: ID!
+    title: String
+    default: Boolean
+    address: UserAddress
+    type: AddressType
+    customer: User @belongsTo
+}
+
+input AddressInput {
+    title: String!
+    default: Boolean
+    address: UserAddressInput!
+    type: AddressType!
+    customer: ConnectBelongsTo
+}
+
+extend type Mutation {
+    createAddress(input: AddressInput! @spread): Address
+        @create
+        @can(ability: "super_admin")
+    updateAddress(id: ID!, input: AddressInput! @spread): Address
+        @update
+        @can(ability: "super_admin")
+    deleteAddress(id: ID!): Address @delete @can(ability: "customer")
+}

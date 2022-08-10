@@ -1,0 +1,31 @@
+{
+  "name": "chawkbazar",
+  "version": "2.0.0",
+  "private": true,
+  "author": "RedQ, Inc.",
+  "workspaces": [
+    "admin/*",
+    "shop"
+  ],
+  "scripts": {
+    "clean": "yarn workspaces run rimraf \"{.next,node_modules}\" && rimraf node_modules",
+    "dev:shop-rest": "yarn workspace @chawkbazar/shop dev",
+    "build:shop-rest": "yarn workspace @chawkbazar/shop build",
+    "start:shop-rest": "yarn workspace @chawkbazar/shop start",
+    "dev:admin-rest": "yarn workspace @chawkbazar/admin-rest dev",
+    "build:admin-rest": "yarn workspace @chawkbazar/admin-rest build",
+    "start:admin-rest": "yarn workspace @chawkbazar/admin-rest start",
+    "prepare": "husky install"
+  },
+  "devDependencies": {
+    "husky": "^6.0.0",
+    "lint-staged": "^11.0.0",
+    "prettier": "^2.2.1",
+    "rimraf": "^3.0.2"
+  },
+  "lint-staged": {
+    "*.{js,ts,tsx,md,css}": [
+      "prettier --trailing-comma es5 --write"
+    ]
+  }
+}

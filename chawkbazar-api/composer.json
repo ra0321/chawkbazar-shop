@@ -1,0 +1,92 @@
+{
+    "name": "redq/marvel",
+    "type": "project",
+    "description": "Marvel, a complete ecommerce solution for both rest and graphql",
+    "keywords": [
+        "marvel",
+        "graphql",
+        "rest-api"
+    ],
+    "license": "MIT",
+    "require": {
+        "php": "^7.3|^8.0",
+        "barryvdh/laravel-dompdf": "^0.9.0",
+        "doctrine/dbal": "^3.1",
+        "fideloper/proxy": "^4.4",
+        "fruitcake/laravel-cors": "^2.0",
+        "guzzlehttp/guzzle": "^7.0.1",
+        "ignited/laravel-omnipay": "dev-master",
+        "laravel/framework": "^8.12",
+        "laravel/socialite": "^5.2",
+        "laravel/tinker": "^2.5",
+        "messagebird/php-rest-api": "^2.0",
+        "omnipay/common": "dev-master",
+        "omnipay/stripe": "dev-master",
+        "marvel/shop": "dev-master",
+        "twilio/sdk": "^6.25"
+    },
+    "require-dev": {
+        "facade/ignition": "^2.5",
+        "fakerphp/faker": "^1.9.1",
+        "laravel/sail": "^0.0.5",
+        "mockery/mockery": "^1.4.2",
+        "nunomaduro/collision": "^5.0",
+        "phpunit/phpunit": "^9.3.3",
+        "friendsofphp/php-cs-fixer": "^2.16",
+        "squizlabs/php_codesniffer": "3.*"
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "preferred-install": "dist",
+        "sort-packages": true
+    },
+    "extra": {
+        "laravel": {
+            "dont-discover": []
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/",
+            "Database\\Factories\\": "database/factories/",
+            "Database\\Seeders\\": "database/seeders/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "scripts": {
+        "post-autoload-dump": [
+            "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
+            "@php artisan package:discover --ansi"
+        ],
+        "post-root-package-install": [
+            "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""
+        ],
+        "post-create-project-cmd": [
+            "@php artisan key:generate --ansi"
+        ]
+    },
+    "repositories": {
+        "marvel/shop": {
+            "type": "path",
+            "url": "packages/marvel"
+        },
+        "ignited/laravel-omnipay": {
+            "type": "path",
+            "url": "packages/laravel-omnipay"
+        },
+        "omnipay/common": {
+            "type": "path",
+            "url": "packages/omnipay-common"
+        },
+        "omnipay/stripe": {
+            "type": "path",
+            "url": "packages/omnipay-stripe"
+        }
+    }
+}

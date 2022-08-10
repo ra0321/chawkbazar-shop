@@ -1,0 +1,45 @@
+extend type Query {
+    profiles(contact: String @where(operator: "LIKE")): [Profile!]!
+        @all
+        @can(ability: "super_admin")
+    singleProfile(id: ID @eq): Profile @find @can(ability: "super_admin")
+}
+
+type Social {
+    type: String
+    link: String
+}
+
+type Profile {
+    id: ID!
+    avatar: Attachment
+    bio: String
+    socials: [Social]
+    contact: String
+    customer: User @belongsTo
+}
+input CreateProfileInput {
+    avatar: AttachmentInput
+    bio: String
+    socials: [SocialInput]
+    contact: String
+    customer: ConnectBelongsTo
+}
+input UpdateProfileInput {
+    id: ID!
+    avatar: AttachmentInput
+    bio: String
+    socials: [SocialInput]
+    contact: String
+    customer: ConnectBelongsTo
+}
+
+extend type Mutation {
+    createProfile(input: CreateProfileInput! @spread): Profile
+        @create
+        @can(ability: "super_admin")
+    updateProfile(input: UpdateProfileInput! @spread): Profile
+        @update
+        @can(ability: "super_admin")
+    deleteProfile(id: ID!): Profile @delete @can(ability: "super_admin")
+}

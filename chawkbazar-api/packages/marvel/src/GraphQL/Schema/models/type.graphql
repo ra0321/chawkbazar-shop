@@ -1,0 +1,70 @@
+extend type Query {
+    types(
+        text: String @where(operator: "like", key: "name")
+        orderBy: _ @orderBy(columns: ["updated_at", "created_at", "name"])
+    ): [Type!]! @all
+    type(id: ID @eq, slug: String @eq): Type @find
+}
+
+type Type {
+    id: ID!
+    name: String!
+    slug: String!
+    banners: [Banner] @hasMany
+    promotional_sliders: [Attachment]
+    settings: TypeSettings
+    icon: String
+    created_at: DateTime
+    updated_at: DateTime
+}
+
+type TypeSettings {
+    isHome: Boolean
+    layoutType: String
+    productCard: String
+}
+
+input TypeSettingsInput {
+    isHome: Boolean
+    layoutType: String
+    productCard: String
+}
+
+type Banner {
+    id: Int
+    title: String
+    description: String
+    image: Attachment
+}
+
+input BannerInputType {
+    title: String
+    description: String
+    image: AttachmentInput
+}
+
+input CreateTypeInput {
+    name: String!
+    banners: [BannerInputType]
+    promotional_sliders: [AttachmentInput]
+    settings: TypeSettingsInput
+    icon: String
+}
+input UpdateTypeInput {
+    id: ID!
+    name: String!
+    banners: [BannerInputType]
+    promotional_sliders: [AttachmentInput]
+    settings: TypeSettingsInput
+    icon: String
+}
+
+extend type Mutation {
+    deleteType(id: ID!): Type @delete @can(ability: "super_admin")
+    updateType(input: UpdateTypeInput! @spread): Type
+        @field(resolver: "TypeMutator@updateType")
+        @can(ability: "super_admin")
+    createType(input: CreateTypeInput! @spread): Type
+        @field(resolver: "TypeMutator@storeType")
+        @can(ability: "super_admin")
+}

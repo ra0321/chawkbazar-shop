@@ -1,0 +1,54 @@
+extend type Query {
+    withdraws(
+        orderBy: String
+        sortedBy: String
+        status: String @where(operator: "LIKE")
+        shop_id: ID @eq
+    ): [Withdraw]
+        @paginate(
+            builder: "Marvel\\GraphQL\\Queries\\WithdrawQuery@fetchWithdraws"
+            defaultCount: 15
+        )
+    withdraw(id: ID): Withdraw
+        @field(
+            resolver: "Marvel\\GraphQL\\Queries\\WithdrawQuery@fetchSingleWithdraw"
+        )
+}
+
+type Withdraw {
+    id: ID!
+    amount: Float!
+    status: WithdrawStatus!
+    shop_id: ID!
+    shop: Shop @belongsTo
+    payment_method: String
+    details: String
+    note: String
+    created_at: DateTime
+    updated_at: DateTime
+}
+
+input CreateWithdrawInput {
+    amount: Float!
+    shop_id: ID!
+    payment_method: String
+    details: String
+    note: String
+}
+
+input ApproveWithdrawInput {
+    id: ID! @rules(apply: ["required"])
+    status: WithdrawStatus!
+}
+
+extend type Mutation {
+    deleteWithdraw(id: ID!): Withdraw @delete @can(ability: "super_admin")
+    createWithdraw(input: CreateWithdrawInput! @spread): Withdraw
+        @field(resolver: "Marvel\\GraphQL\\Mutation\\WithdrawMutation@store")
+        @can(ability: "store_owner")
+    approveWithdraw(input: ApproveWithdrawInput! @spread): Withdraw
+        @field(
+            resolver: "Marvel\\GraphQL\\Mutation\\WithdrawMutation@approveWithdraw"
+        )
+        @can(ability: "super_admin")
+}

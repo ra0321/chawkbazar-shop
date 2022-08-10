@@ -1,0 +1,61 @@
+extend type Query {
+    categories(
+        orderBy: _ @orderBy(columns: ["created_at", "name", "updated_at"])
+        name: String @where(operator: "LIKE")
+        text: String @where(operator: "like", key: "name")
+        parent: ID @eq
+        hasType: _ @whereHasConditions(columns: ["slug"])
+    ): [Category!]! @paginate(defaultCount: 15)
+    # categoriesAlongChildren(
+    #     orderBy: _ @orderBy(columns: ["created_at", "name", "updated_at"])
+    #     hasType: _ @whereHasConditions(columns: ["slug"])
+    # ): [Category] @all
+    category(id: ID @eq, slug: String @eq): Category @find
+}
+
+type Category {
+    id: ID!
+    name: String!
+    slug: String!
+    parent_id: ID
+    parent: Category @belongsTo
+    children: [Category] @hasMany
+    sub_categories: [Category] @hasMany
+    products_count: Int @count(relation: "products")
+    details: String
+    image: Attachment
+    icon: String
+    type: Type! @belongsTo
+    products: [Product] @belongsToMany
+    created_at: DateTime
+    updated_at: DateTime
+}
+
+input CreateCategoryInput {
+    name: String! @rules(apply: ["required", "max:255"])
+    type: ConnectTypeBelongsTo!
+    parent: Int
+    details: String
+    image: AttachmentInput
+    icon: String
+}
+
+input UpdateCategoryInput {
+    id: ID! @rules(apply: ["required"])
+    name: String! @rules(apply: ["max:255"])
+    type: ConnectTypeBelongsTo!
+    parent: Int
+    details: String
+    image: AttachmentInput
+    icon: String
+}
+
+extend type Mutation {
+    deleteCategory(id: ID!): Category @delete @can(ability: "super_admin")
+    createCategory(input: CreateCategoryInput! @spread): Category
+        @create
+        @can(ability: "super_admin")
+    updateCategory(input: UpdateCategoryInput! @spread): Category
+        @update
+        @can(ability: "super_admin")
+}

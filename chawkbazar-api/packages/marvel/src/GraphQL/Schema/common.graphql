@@ -1,0 +1,47 @@
+input ConnectTypeBelongsTo {
+    connect: ID! @rules(apply: ["exists:types,id"])
+}
+
+input ConnectProductOrderPivot {
+    product_id: ID! @rules(apply: ["exists:products,id"])
+    variation_option_id: ID
+    order_quantity: Int
+    unit_price: Float
+    subtotal: Float
+}
+
+type UserAddress {
+    street_address: String
+    country: String
+    city: String
+    state: String
+    zip: String
+}
+
+input UserAddressInput {
+    street_address: String
+    country: String
+    city: String
+    state: String
+    zip: String
+}
+
+input ConnectBelongsTo {
+    connect: ID @rules(apply: ["exists:users,id"])
+}
+
+type Attachment {
+    thumbnail: String
+    original: String
+    id: ID
+}
+input AttachmentInput {
+    thumbnail: String
+    original: String
+    id: ID
+}
+
+input SocialInput {
+    type: String
+    link: String
+}
