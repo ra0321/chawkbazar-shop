@@ -2,7 +2,7 @@
   "name": "chawkbazar",
   "version": "2.0.0",
   "private": true,
-  "author": "RedQ, Inc.",
+  "author": "Ravil.",
   "workspaces": [
     "admin/*",
     "shop"
