@@ -6,7 +6,6 @@ if [ ! -f "$FILE" ]; then
     echo 'Creating .env file...'
     cp .env.example .env
 fi
-
 FILE=packages/marvel/stubs
 if [ ! -h "$FILE" ]; then
     echo "Creating stubs..."
