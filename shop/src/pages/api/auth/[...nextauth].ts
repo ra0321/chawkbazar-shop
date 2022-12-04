@@ -96,7 +96,7 @@ export default NextAuth({
         session.provider = provider;
         session.accessToken = accessToken;
       }
-
+      console.log(session);
       return session;
     }
   },
